@@ -4,16 +4,18 @@ import axios from 'axios';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
-    CategoryScale, // Importando a escala de categoria
+    CategoryScale,
     LinearScale,
     PointElement,
     LineElement,
     Filler,
     Tooltip,
-    Legend
+    Legend,
 } from 'chart.js';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import './DashBoard.css';
 
-// Registrando as escalas e elementos necessários
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -32,18 +34,40 @@ const DashBoard = () => {
     const [temperatureData, setTemperatureData] = useState([]);
     const [humidityData, setHumidityData] = useState([]);
     const [dates, setDates] = useState([]);
+    const [daysOffset, setDaysOffset] = useState(0);
 
     const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-    const fetchPlantData = async () => {
+    // Função para calcular a data de início com base no número de dias
+    const calculateDateRange = (offset) => {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - offset);
+        return {
+            start_date: format(startDate, 'yyyy-MM-dd'),
+            end_date: format(endDate, 'yyyy-MM-dd'),
+        };
+    };
+
+    // Função para buscar dados com base no intervalo de datas
+    const fetchPlantData = async (offset) => {
         setLoading(true);
+        const { start_date, end_date } = calculateDateRange(offset); // Calcula as datas
         try {
-            const response = await axios.get(`${backendUrl}plantas/${id}`);
-            setPlantData(response.data.data);
-            const logPlant = response.data.log_plant;
-            setTemperatureData(logPlant.map(log => log.temperatura));
-            setHumidityData(logPlant.map(log => log.umidade));
-            setDates(logPlant.map(log => new Date(log.created_at).toLocaleDateString()));
+            const response = await axios.get(`${backendUrl}/monitoring-plans-log/1`, {
+                params: { start_date, end_date },
+            });
+            setPlantData(response.data);
+            const logPlant = response.data.data || [];
+
+            if (Array.isArray(logPlant)) {
+                setTemperatureData(logPlant.map(log => log.temperatura));
+                setHumidityData(logPlant.map(log => log.umidade));
+                setDates(logPlant.map(log => new Date(log.created_at)));
+            } else {
+                console.error('logPlant não é um array:', logPlant);
+            }
+
             setError('');
         } catch (err) {
             console.error(err);
@@ -54,21 +78,21 @@ const DashBoard = () => {
     };
 
     useEffect(() => {
-        fetchPlantData();
-    }, [id]);
+        fetchPlantData(daysOffset);
+    }, [id, daysOffset]);
 
     const data = {
-        labels: dates,
+        labels: dates.map(date => format(date, 'dd/MM', { locale: ptBR })),
         datasets: [
             {
-                label: 'Temperatura',
+                label: 'Temperatura (°C)',
                 data: temperatureData,
                 borderColor: 'rgba(255, 99, 132, 1)',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 fill: true,
             },
             {
-                label: 'Umidade',
+                label: 'Umidade (%)',
                 data: humidityData,
                 borderColor: 'rgba(54, 162, 235, 1)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
@@ -77,15 +101,36 @@ const DashBoard = () => {
         ],
     };
 
+    const handleDaysOffsetChange = (e) => {
+        setDaysOffset(Number(e.target.value));
+    };
+
     return (
-        <div>
-            <h1>{plantData.name_planta}</h1>
-            {loading && <p>Carregando...</p>}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {temperatureData.length > 0 || humidityData.length > 0 ? (
-                <Line data={data} />
+        <div className="dashboard-container">
+            <h1 className="plant-title">{plantData.name_planta || 'Planta Desconhecida'}</h1>
+            
+            <div className="offset-controls">
+                <label htmlFor="daysOffset">Mostrar dados dos últimos: </label>
+                <select id="daysOffset" value={daysOffset} onChange={handleDaysOffsetChange}>
+                    <option value={3}>3 dias</option>
+                    <option value={5}>5 dias</option>
+                    <option value={10}>10 dias</option>
+                    <option value={30}>30 dias</option>
+                </select>
+            </div>
+
+            {loading ? (
+                <div className="loader">Carregando...</div>
+            ) : error ? (
+                <div className="error-message">{error}</div>
             ) : (
-                !loading && <p>Nenhum dado disponível para exibição.</p>
+                <div>
+                    {temperatureData.length > 0 || humidityData.length > 0 ? (
+                        <Line data={data} />
+                    ) : (
+                        <p className="no-data">Nenhum dado disponível para exibição.</p>
+                    )}
+                </div>
             )}
         </div>
     );

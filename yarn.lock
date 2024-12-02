@@ -3088,12 +3088,17 @@
   "resolved" "https://registry.npmjs.org/char-regex/-/char-regex-2.0.1.tgz"
   "version" "2.0.1"
 
-"chart.js@^4.1.1", "chart.js@^4.4.5":
+"chart.js@^4.1.1", "chart.js@^4.4.5", "chart.js@>=2.8.0":
   "integrity" "sha512-CVVjg1RYTJV9OCC8WeJPMx8gsV8K6WIyIEQUE3ui4AR9Hfgls9URri6Ja3hyMVBbTF8Q2KFa19PE815gWcWhng=="
   "resolved" "https://registry.npmjs.org/chart.js/-/chart.js-4.4.5.tgz"
   "version" "4.4.5"
   dependencies:
     "@kurkle/color" "^0.3.0"
+
+"chartjs-adapter-date-fns@^3.0.0":
+  "integrity" "sha512-Rs3iEB3Q5pJ973J93OBTpnP7qoGwvq3nUnoMdtxO+9aoJof7UFcRbWcIDteXuYd1fgAvct/32T9qaLyLuZVwCg=="
+  "resolved" "https://registry.npmjs.org/chartjs-adapter-date-fns/-/chartjs-adapter-date-fns-3.0.0.tgz"
+  "version" "3.0.0"
 
 "check-types@^11.2.3":
   "integrity" "sha512-+67P1GkJRaxQD6PKK0Et9DhwQB+vGg3PM5+aavopCpZT1lj9jeqfvpgTLAWErNj8qApkkmXlu/Ug74kmhagkXg=="
@@ -3614,6 +3619,11 @@
     "call-bind" "^1.0.6"
     "es-errors" "^1.3.0"
     "is-data-view" "^1.0.1"
+
+"date-fns@^2.21.1", "date-fns@>=2.0.0":
+  "integrity" "sha512-m1WR0xGiC6j6jNFAyW4Nvh4WxAi4JF4w9jRJwSI8nBmNcyZXPcP9VUQG+6gHQXAmqaGEKDKhOqAtENDC941UkA=="
+  "resolved" "https://registry.npmjs.org/date-fns/-/date-fns-2.21.1.tgz"
+  "version" "2.21.1"
 
 "debug@^2.6.0":
   "integrity" "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA=="

@@ -13,8 +13,6 @@ const Login = () => {
     const [wrongLogin, setWrongLogin] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isOpenModalRecover, setIsOpenModalRecover] = useState(false);
-    const [recoveryError, setRecoveryError] = useState('');
-    const [messageRecovery, setMessageRecovery] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -35,23 +33,15 @@ const Login = () => {
     const maybeLogin = async () => {
         if (loading) return;
 
-        let isValid = checkEmail() && checkPassword();
-
+        const isValid = checkEmail() && checkPassword();
         if (!isValid) return;
 
         setLoading(true);
-        console.log('Logando...');
 
         try {
-            // Alterado para usar Axios
-            const response = await axios.post(`${backendUrl}login`, {
-                email,
-                password,
-            });
+            const response = await axios.post(`${backendUrl}/login`, { email, password });
 
             if (response.status === 200) {
-                console.log('Login bem-sucedido!', response.data);
-                setWrongLogin(false);
                 navigate('/home');
             } else {
                 setWrongLogin(true);
@@ -63,9 +53,7 @@ const Login = () => {
                 });
             }
         } catch (error) {
-            console.error('Erro na requisição:', error);
             setWrongLogin(true);
-
             Swal.fire({
                 title: 'Erro!',
                 text: 'Ocorreu um erro ao realizar o login. Tente novamente mais tarde.',
@@ -77,47 +65,56 @@ const Login = () => {
         }
     };
 
+    const handlePasswordRecovery = () => {
+        Swal.fire({
+            title: 'Recuperação de Senha',
+            text: `Um e-mail de recuperação foi enviado para ${email}. Verifique sua caixa de entrada.`,
+            icon: 'info',
+            confirmButtonText: 'OK'
+        });
+        setIsOpenModalRecover(false);
+    };
+
     return (
         <Fragment>
             <div 
                 className="bg-image" 
                 style={{
-                    backgroundColor: '#f0f0f0',
+                    backgroundColor: '#e0f7fa',
                     height: '100vh',
                     display: 'flex',
                     justifyContent: 'center',
-                    alignItems: 'center'
+                    alignItems: 'center',
                 }}
             >
                 <div className="rui-sign-form" style={{ 
-                    backgroundColor: 'white', 
-                    padding: '30px', 
+                    backgroundColor: '#ffffff', 
+                    padding: '40px', 
                     borderRadius: '12px', 
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
                     maxWidth: '400px',  
                     width: '100%',       
-                    margin: '0 auto'     
                 }}>
-                    <h1 className="display-4 mb-10" style={{ color: 'green', textAlign: 'center' }}>Green Hub</h1>
-                    <h2 className="slogan mb-2" style={{ fontSize: '0.8rem', textAlign: 'center', color: 'gray' }}> 
-                        Seu meio ambiente na palma das suas mãos!
+                    <h1 className="display-4 mb-4" style={{ color: '#4caf50', textAlign: 'center' }}>Green Hub</h1>
+                    <h2 className="slogan mb-3" style={{ fontSize: '1rem', textAlign: 'center', color: '#757575' }}> 
+                        Seu meio ambiente mais próximo de você!
                     </h2>
-                    <h1 className="display-4 mb-10" style={{ color: 'gray', textAlign: 'center' }}>Login | GreenHub</h1>
+                    <h1 className="display-5 mb-4" style={{ color: '#616161', textAlign: 'center' }}>Login</h1>
                     
-                    <div style={{ marginBottom: '20px' }}> {}
+                    <div style={{ marginBottom: '20px' }}>
                         <input
                             type="email"
                             className={`form-control ${emailError ? 'is-invalid' : ''}`}
-                            placeholder="E-mail ou login"
+                            placeholder="E-mail"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             onBlur={checkEmail}
                             disabled={loading}
-                            style={{ width: '100%', padding: '10px', borderRadius: '8px' }} 
+                            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} 
                         />
                         {emailError && <div className="invalid-feedback">{emailError}</div>}
                     </div>
-                    <div style={{ marginBottom: '20px' }}> {}
+                    <div style={{ marginBottom: '20px' }}>
                         <input
                             type="password"
                             className={`form-control ${passwordError ? 'is-invalid' : ''}`}
@@ -126,43 +123,63 @@ const Login = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             onBlur={checkPassword}
                             disabled={loading}
-                            style={{ width: '100%', padding: '10px', borderRadius: '8px' }}
+                            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }}
                         />
                         {passwordError && <div className="invalid-feedback">{passwordError}</div>}
                     </div>
                     {wrongLogin && <Alert color="danger">Erro ao realizar o login.</Alert>}
                     
-                    <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', justifyContent: 'center' }}>
-                        <input 
-                            type="checkbox" 
-                            id="rememberMe" 
-                            checked={rememberMe} 
-                            onChange={() => setRememberMe(!rememberMe)} 
-                            style={{ marginRight: '4px' }}
-                        />
-                        <label htmlFor="rememberMe" style={{ fontSize: 'small' }}>Ficar Logado</label>
-                        
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                        <div>
+                            <input 
+                                type="checkbox" 
+                                id="rememberMe" 
+                                checked={rememberMe} 
+                                onChange={() => setRememberMe(!rememberMe)} 
+                                style={{ marginRight: '4px' }}
+                            />
+                            <label htmlFor="rememberMe" style={{ fontSize: 'small' }}>Ficar Logado</label>
+                        </div>
                         <Button 
                             onClick={() => setIsOpenModalRecover(true)} 
-                            style={{ marginLeft: '20px', fontSize: 'small', padding: '0', height: 'auto', lineHeight: 'normal' }} // Ajuste do botão
+                            style={{ fontSize: 'small', padding: '0', height: 'auto' }}
                         >
-                            <span style={{ fontSize: '0.8rem' }}>Esqueceu sua</span><br/>
-                            <span style={{ fontSize: '0.8rem' }}>senha?</span>
+                            Esqueceu sua senha?
                         </Button>
                     </div>
                     
                     <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                        <Button 
-                            onClick={maybeLogin} 
-                            disabled={loading}
-                            style={{ backgroundColor: 'green', borderColor: 'green', width: '100%', height: '45px', borderRadius: '8px' }} // Adicionei bordas arredondadas
-                        >
-                            {loading ? <span>Loading...</span> : 'Entrar'}
-                        </Button>
+                    <Button 
+                        onClick={maybeLogin} 
+                        disabled={loading}
+                        style={{ backgroundColor: '#4caf50', borderColor: '#4caf50', width: '100%', height: '45px', borderRadius: '8px' }}
+                    >
+                        {loading ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : 'Entrar'}
+                    </Button>
                     </div>
+                    <p style={{ textAlign: 'center', fontSize: '14px', color: '#757575' }}>
+                        GreenHub: seu espaço para a sustentabilidade. Junte-se a nós e faça a diferença!
+                    </p>
                 </div>
             </div>
-            <Modal isOpen={isOpenModalRecover}>
+            <Modal isOpen={isOpenModalRecover} toggle={() => setIsOpenModalRecover(false)}>
+                <div style={{ padding: '20px' }}>
+                    <h5>Recuperar Senha</h5>
+                    <input
+                        type="email"
+                        className="form-control mt-3"
+                        placeholder="Digite seu e-mail"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <Button
+                        color="primary"
+                        onClick={handlePasswordRecovery}
+                        style={{ marginTop: '10px', width: '100%' }}
+                    >
+                        Enviar
+                    </Button>
+                </div>
             </Modal>
         </Fragment>
     );
