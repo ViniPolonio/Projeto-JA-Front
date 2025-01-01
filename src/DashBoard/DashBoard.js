@@ -34,15 +34,14 @@ const DashBoard = () => {
     const [temperatureData, setTemperatureData] = useState([]);
     const [humidityData, setHumidityData] = useState([]);
     const [dates, setDates] = useState([]);
-    const [daysOffset, setDaysOffset] = useState(0);
+    const [daysOffset, setDaysOffset] = useState(3);  // Definido para 3 dias por padrão
 
     const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-    // Função para calcular a data de início com base no número de dias
     const calculateDateRange = (offset) => {
         const endDate = new Date();
         const startDate = new Date();
-        startDate.setDate(endDate.getDate() - offset);
+        startDate.setDate(endDate.getDate() - offset);  // Definindo a data de 3 dias atrás
         return {
             start_date: format(startDate, 'yyyy-MM-dd'),
             end_date: format(endDate, 'yyyy-MM-dd'),
@@ -52,7 +51,7 @@ const DashBoard = () => {
     // Função para buscar dados com base no intervalo de datas
     const fetchPlantData = async (offset) => {
         setLoading(true);
-        const { start_date, end_date } = calculateDateRange(offset); // Calcula as datas
+        const { start_date, end_date } = calculateDateRange(offset);
         try {
             const response = await axios.get(`${backendUrl}/monitoring-plans-log/1`, {
                 params: { start_date, end_date },
@@ -78,7 +77,7 @@ const DashBoard = () => {
     };
 
     useEffect(() => {
-        fetchPlantData(daysOffset);
+        fetchPlantData(daysOffset);  // Consultando os últimos 3 dias
     }, [id, daysOffset]);
 
     const data = {
